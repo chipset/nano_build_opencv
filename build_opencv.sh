@@ -49,6 +49,56 @@ git_source () {
     git clone --branch "$1" https://github.com/opencv/opencv_contrib.git
 }
 
+update_cmake() {
+    echo "Updating cmake"
+    wget http://www.cmake.org/files/v3.13/cmake-3.13.0.tar.gz
+    tar xpvf cmake-3.13.0.tar.gz cmake-3.13.0/
+
+    cd cmake-3.13.0/
+    ./bootstrap --system-curl
+    make -j4
+    
+    echo 'export PATH=/home/thomas/cmake-3.13.0/bin/:$PATH' >> ~/.bashrc
+    source ~/.bashrc
+    cd ~
+    
+}
+
+update_system_level_dependencies()
+{
+    sudo apt-get install -y build-essential \
+        pkg-config \
+        libtbb2 \
+        libtbb-dev \
+        libavcodec-dev \
+        libavformat-dev \
+        libswscale-dev \
+        libxvidcore-dev \
+        libavresample-dev \
+        libtiff-dev \
+        libjpeg-dev \
+        libpng-dev \
+        python-tk \
+        libgtk-3-dev \
+        libcanberra-gtk-module \
+        libcanberra-gtk3-module \
+        libv4l-dev \
+        libdc1394-22-dev 
+}
+
+setup_pip() {
+    wget https://bootstrap.pypa.io/get-pip.py
+    sudo python3 get-pip.py
+    rm get-pip.py
+    sudo pip install virtualenv virtualenvwrapper
+}
+
+setup_protobuf() {
+    wget https://raw.githubusercontent.com/jkjung-avt/jetson_nano/master/install_protobuf-3.6.1.sh
+    sudo chmod +x install_protobuf-3.6.1.sh
+    ./install_protobuf-3.6.1.sh
+}
+
 install_dependencies () {
     # open-cv has a lot of dependencies, but most can be found in the default
     # package repository or should already be installed (eg. CUDA).
@@ -61,6 +111,12 @@ install_dependencies () {
         git \
         gfortran \
         libatlas-base-dev \
+        libhdf5 \
+        libhdf5-serial-dev \
+        hdf5-tools \
+        nano \
+        locate \
+        libfreetype6-dev \
         libavcodec-dev \
         libavformat-dev \
         libavresample-dev \
@@ -79,6 +135,9 @@ install_dependencies () {
         liblapacke-dev \
         libopenblas-dev \
         libpng-dev \
+        libssl-dev \
+        libcurl4-openssl-dev \
+        cython3 \
         libpostproc-dev \
         libswscale-dev \
         libtbb-dev \
@@ -89,8 +148,14 @@ install_dependencies () {
         libxine2-dev \
         libxvidcore-dev \
         libx264-dev \
+        protobuf-compiler \
+        libprotobuf-dev \
+        libxml2-dev \
+        libxslt1-dev \
+        openssl \
         pkg-config \
         python-dev \
+        python3-setuptools \
         python-numpy \
         python3-dev \
         python3-numpy \
@@ -153,6 +218,12 @@ main () {
     # prepare for the build:
     setup
     install_dependencies
+    update_cmake
+    update_system_level_dependencies
+    setup_pip
+    # setup_protobuf
+    
+    
     git_source ${VER}
 
     if [[ ${DO_TEST} ]] ; then
